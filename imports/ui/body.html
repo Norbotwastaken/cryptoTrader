@@ -1,0 +1,10 @@
+<body>
+	<div class="container">
+		{{> sidebar}}
+		<div class="content">
+			{{#if currentUser}}
+				{{> overview}}
+			{{/if}}
+		</div>
+	</div>
+</body>

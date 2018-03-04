@@ -1,0 +1,30 @@
+<template name="sidebar">
+		<div class="sidebar">
+			<div class="sidebarelement">
+				<h1>CRYPTO TRADER</h1>
+			</div>
+			{{#if currentUser}}
+			<div class="sidebarelement">
+				<ul class="nav nav-pills dark">
+					<li role="presentation" class="active"><a href="#">OVERVIEW</a></li>
+				</ul>
+				<!-- <button>Overview</button> -->
+			</div>
+			<hr>
+			<div class="sidebarelement">
+				<div class="notCentered">
+					<p class="balance">BALANCE AVAILABLE</p>
+					<p>{{balanceUSD}} USD</p>
+				</div>
+			</div>
+			<div class="sidebarelement">
+				<div class="centered">
+					<button type="button" class="btn btn-danger reset-balance">Reset Balance</button>
+				</div>
+			</div>
+			{{/if}}
+			<div class="loginButtonsDiv">
+				{{> loginButtons}}
+			</div>
+		</div>
+</template>
