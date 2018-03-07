@@ -3,6 +3,7 @@ import { Mongo } from 'meteor/mongo';
 import { check } from 'meteor/check';
 
 import { Crypto } from './crypto.js';
+import { CryptoConfig } from '../../cryptoConfig.js';
 
 export const Balance = new Mongo.Collection('balance');
 
@@ -21,11 +22,7 @@ Meteor.methods({
 			balanceMatcher: balanceMatcher,
 			balance: {
 				USD: 5000,
-				crypto: {
-					BTC: 0,
-					ETH: 0,
-					XZC: 0
-				}
+				crypto: {}
 			}
 		});
 	},
@@ -35,56 +32,53 @@ Meteor.methods({
 		});
 		Meteor.call('balance.new', Meteor.user().balanceMatcher);
 	},
-	'balance.exchange'(amount, currency) {
-		let newBTC = 0;
-		let newETH = 0;
-		let newXZC = 0;
-		var priceOfCrypto = 0;
-		if (currency === 'BTC') {
-			newBTC += Number(amount);
-			Crypto.BTC.current(function(price) {
-				priceOfCrypto += (amount * price);
-				exchange(priceOfCrypto, 'BTC', amount);
-			});
-		}
-		if (currency === 'ETH') {
-			newETH += Number(amount);
-			Crypto.ETH.current(function(price) {
-				priceOfCrypto += (amount * price);
-				exchange(priceOfCrypto, 'ETH', amount);
-			});
-		}
-		if (currency === 'XZC') {
-			newXZC += Number(amount);
-			Crypto.XZC.current(function(price) {
-				priceOfCrypto += (amount * price);
-				exchange(priceOfCrypto, 'XZC', amount);
-			});
-		}
+	'balance.exchange.buy'(amount, currency) {
+		Crypto.current(currency, function(price) {
+			var priceOfCrypto = (amount * price);
+			buy(priceOfCrypto, currency, amount);
+		});
+	},
+	'balance.exchange.sell'(amount, currency) {
+		Crypto.current(currency, function(price) {
+			var priceOfCrypto = (amount * price);
+			sell(priceOfCrypto, currency, amount);
+		});
 	}
 });
 
-var exchange = function(priceOfCrypto, currency, amount) {
+var buy = function(priceOfCrypto, currency, amount) {
 	var currentBalance = Balance.findOne(
 		{ 'balanceMatcher': Meteor.user().balanceMatcher },
-		{ 'balance': { USD: 1 }  }
+		{ 'balance': 1  }
 	).balance;
-	// console.log('Exchanging ' + amount + " " + currency + ' @ ' + priceOfCrypto);
 	if (currentBalance.USD < priceOfCrypto) throw new Meteor.Error('insufficient-funds');
-	var crypto = {
-		'BTC': Number(currentBalance.crypto.BTC),
-		'ETH': Number(currentBalance.crypto.ETH),
-		'XZC': Number(currentBalance.crypto.XZC),
-	};
-	if (currency === 'BTC') crypto.BTC = Number(crypto.BTC) + Number(amount);
-	if (currency === 'ETH') crypto.ETH = Number(crypto.ETH) + Number(amount);
-	if (currency === 'XZC') crypto.XZC = Number(crypto.XZC) + Number(amount);
+	var existingCryptoFunds = 0;
+	if (currentBalance.crypto[currency]) existingCryptoFunds = Number(currentBalance.crypto[currency]);
+	var totalCryptoAmount = existingCryptoFunds + Number(amount);
+	var totalUSDAmount = Number(currentBalance.USD) - Number(priceOfCrypto);
+	currentBalance.USD = totalUSDAmount;
+	currentBalance.crypto[currency] = totalCryptoAmount;
 	Balance.update(
 		{ 'balanceMatcher': Meteor.user().balanceMatcher },
-		{ 'balanceMatcher': Meteor.user().balanceMatcher,
-			'balance': {
-				'USD': currentBalance.USD - priceOfCrypto,
-				'crypto': crypto
-			}
-	});
+		{ $set: { 'balance': currentBalance } }
+	);
+}
+
+var sell = function(priceOfCrypto, currency, amount) {
+	var currentBalance = Balance.findOne(
+		{ 'balanceMatcher': Meteor.user().balanceMatcher },
+		{ 'balance': 1  }
+	).balance;
+	// console.log('Selling ' + amount + " " + currency + ' @ ' + priceOfCrypto);
+	if (currentBalance.crypto[currency] < amount ||
+		!currentBalance.crypto[currency] ||
+		isNaN(currentBalance.crypto[currency])) throw new Meteor.Error('insufficient-funds');
+	var totalCryptoAmount = Number(currentBalance.crypto[currency]) - Number(amount);
+	var totalUSDAmount = Number(currentBalance.USD) + Number(priceOfCrypto);
+	currentBalance.USD = totalUSDAmount;
+	currentBalance.crypto[currency] = totalCryptoAmount;
+	Balance.update(
+		{ 'balanceMatcher': Meteor.user().balanceMatcher },
+		{ $set: { 'balance': currentBalance } }
+	);
 }

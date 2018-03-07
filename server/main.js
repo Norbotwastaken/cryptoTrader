@@ -22,9 +22,9 @@ ServiceConfiguration.configurations.remove({
 
 ServiceConfiguration.configurations.insert({
   // Insert app certs here:
-  // service: 'servicename',
-  // appId: 'appID',
-  // secret: 'secret'
+  service: "facebook",
+  appId: '',
+  secret: ''
 });
 
 Meteor.publish('userData', function () {

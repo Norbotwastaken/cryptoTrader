@@ -34,14 +34,12 @@ Template.body.events({
 			template.find(".login-password").value,
 			function(error) {
 				if (error) {
-				// 
 			}
 		});
 	},
 	"submit .logout-form": function(event, template) {
 		event.preventDefault();
 		Meteor.logout(function(error) {
-			// 
 		});
 	}
 });

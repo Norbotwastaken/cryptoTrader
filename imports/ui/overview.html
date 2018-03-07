@@ -12,18 +12,12 @@
 						</div>
 						<div class="panel-body">
 							<div class="cryptoCurrentcyDisplay">
-								<div class="col-sm-4">
-									<p>Bitcoin</p>
-									<span class="largerText">{{balanceCrypto "BTC"}}</span>
-								</div>
-								<div class="col-sm-4">
-									<p>Ethereum</p>
-									<span class="largerText">{{balanceCrypto "ETH"}}</span>
-								</div>
-								<div class="col-sm-4">
-									<p>ZCoin</p>
-									<span class="largerText">{{balanceCrypto "XZC"}}</span>
-								</div>
+								{{#each cryptoTypes}}
+									<div class="col-sm-4">
+										<p>{{Displayname}}</p>
+										<span class="largerText">{{balanceCrypto TLA}}</span>
+									</div>
+								{{/each}}
 							</div>
 						</div>
 					</div>
@@ -38,19 +32,27 @@
 								<div class="row">
 									<div class="col-lg-12">
 										<div class="input-group">
-										<div class="input-group-btn">
-											<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{exchangeTo}} <span class="caret"></span></button>
-											<ul class="dropdown-menu">
-											<li class="cryptoexchangetype"><a>BTC</a></li>
-											<li class="cryptoexchangetype"><a>ETH</a></li>
-											<li class="cryptoexchangetype"><a>XZC</a></li>
-											</ul>
+											<div class="input-group-btn">
+												<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{exchangeTo}} <span class="caret"></span></button>
+												<ul class="dropdown-menu">
+												{{#each cryptoTypes}}
+													<li class="cryptoexchangetype"><a>{{TLA}}</a></li>
+												{{/each}}
+												</ul>
+											</div>
+											<input type="text" class="form-control exchangeAmount" aria-label="..."
+											onkeypress="return (event.charCode >= 48 && event.charCode <= 57) ||  event.charCode == 46 || event.charCode == 0 ">
+											<span class="input-group-btn">
+												<button class="btn btn-default" type="submit">Go</button>
+											</span>
 										</div>
-										<input type="text" class="form-control exchangeAmount" aria-label="..."
-										onkeypress="return (event.charCode >= 48 && event.charCode <= 57) ||  event.charCode == 46 || event.charCode == 0 ">
-										<span class="input-group-btn">
-											<button class="btn btn-default" type="submit">Submit</button>
-										</span>
+										<div class="btn-group buySellSelector" data-toggle="buttons">
+											<label class="btn btn-primary buyCryptoButton active">
+												<input class="buyCryptoButton" type="radio" name="options" id="buy" autocomplete="off" checked>Buy
+											</label>
+											<label class="btn btn-primary sellCryptoButton">
+												<input type="radio" name="options" id="sell" autocomplete="off">Sell
+											</label>
 										</div>
 									</div>
 								</div>

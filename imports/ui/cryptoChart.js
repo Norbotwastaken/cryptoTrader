@@ -3,52 +3,38 @@ import { ReactiveVar } from 'meteor/reactive-var';
 import { Tracker } from 'meteor/tracker';
 import Chart from 'chart.js';
 import { Crypto } from '../api/crypto.js';
+import { CryptoConfig } from '../../cryptoConfig.js';
 
 import './cryptoChart.html';
 
 CryptoCurrency = new Mongo.Collection('cryptoChart', { connection: null });
-CryptoCurrency.insert({
-	name: 'BTC'
-});
-CryptoCurrency.insert({
-	name: 'ETH'
-});
-CryptoCurrency.insert({
-	name: 'XZC'
-});
-let chartDates = [];
-for (let i = 6; i >= 0; i--) {
-	let theDay = new Date(new Date().setDate(new Date().getDate() - i));
-	theDay += '';
-	chartDates.push(theDay.substring(0,10));
+var getChartColor = function() {
+	let col1 = Math.round(Math.random() * (255 - 10) + 10);
+	let col2 = Math.round(Math.random() * (255 - 10) + 10);
+	let col3 = Math.round(Math.random() * (255 - 10) + 10);
+	return {
+		backgroundColor: [
+			'rgba(' + col1 + ', ' + col2 + ', ' + col3 + ', 0.2)',
+		],
+		borderColor: [
+			'rgba(' + col1 + ', ' + col2 + ', ' + col3 + ', 1)',
+		],
+	}
 }
-
-var chartColors = [
-	{
-		backgroundColor: [
-			'rgba(255, 99, 132, 0.2)',
-		],
-		borderColor: [
-			'rgba(255, 99, 132, 1)',
-		],
-	},
-	{
-		backgroundColor: [
-			'rgba(153, 102, 255, 0.2)',
-		],
-		borderColor: [
-			'rgba(153, 102, 255, 1)',
-		],
-	},
-	{
-		backgroundColor: [
-			'rgba(75, 192, 192, 0.2)',
-		],
-		borderColor: [
-			'rgba(75, 192, 192, 1)',
-		],
-	},
-];
+let chartDates = [];
+let chartColors = [];
+for (let i = 23; i >= 0; i--) {
+	var d = new Date();
+	d.setHours(d.getHours() - i);
+	var hours = d.getHours();
+	var minutes = "0" + d.getMinutes();
+	// var seconds = "0" + d.getSeconds();
+	var formattedTime = hours + ':' + minutes.substr(-2);
+	chartDates.push(formattedTime);
+}
+for (let i = 0; i <= CryptoConfig.currencies.length; i++) {
+	chartColors.push(getChartColor());
+}
 
 var updateChart = function() {
 	var chartData = CryptoCurrency.find({}).fetch();
@@ -79,45 +65,30 @@ var updateChart = function() {
 				}]
 			},
 			events: ['click'],
-			tooltips: {enabled: false},
+			// tooltips: {enabled: false},
     		hover: {mode: null},
 		}
   	});
 }
 
 var refreshData = function() {
-	Crypto.BTC.weekly(function(prices) {
-		CryptoCurrency.update(
-			{
-				name: 'BTC',
-			},
-			{
-				name: 'BTC',
-				data: prices.reverse(),
-			}
-		);
+	CryptoConfig.currencies.forEach(currency => {
+		CryptoCurrency.insert({
+			name: currency.Displayname
+		});
 	});
-	Crypto.ETH.weekly(function(prices) {
-		CryptoCurrency.update(
-			{
-				name: 'ETH',
-			},
-			{
-				name: 'ETH',
-				data: prices.reverse(),
-			}
-		);
-	});
-	Crypto.XZC.weekly(function(prices) {
-		CryptoCurrency.update(
-			{
-				name: 'XZC',
-			},
-			{
-				name: 'XZC',
-				data: prices.reverse(),
-			}
-		);
+	CryptoConfig.currencies.forEach(currency => {
+		Crypto.daily(currency.TLA, function(prices) {
+			CryptoCurrency.update(
+				{
+					name: currency.Displayname,
+				},
+				{
+					name: currency.Displayname,
+					data: prices.reverse(),
+				}
+			);
+		});
 	});
 }
 
