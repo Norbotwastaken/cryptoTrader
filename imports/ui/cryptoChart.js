@@ -28,7 +28,6 @@ for (let i = 23; i >= 0; i--) {
 	d.setHours(d.getHours() - i);
 	var hours = d.getHours();
 	var minutes = "0" + d.getMinutes();
-	// var seconds = "0" + d.getSeconds();
 	var formattedTime = hours + ':' + minutes.substr(-2);
 	chartDates.push(formattedTime);
 }
@@ -85,7 +84,7 @@ var refreshData = function() {
 				},
 				{
 					name: currency.Displayname,
-					data: prices.reverse(),
+					data: prices
 				}
 			);
 		});
