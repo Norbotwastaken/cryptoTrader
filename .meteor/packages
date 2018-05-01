@@ -26,3 +26,4 @@ service-configuration
 momentjs:moment
 http
 session
+iron:router

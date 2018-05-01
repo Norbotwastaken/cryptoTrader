@@ -31,3 +31,24 @@ Meteor.publish('userData', function () {
   return Meteor.users.find({_id: this.userId},
     { balanceMatcher: 1 });
 });
+
+Router.configure({
+  notFoundTemplate: "notFound"
+});
+
+Router.map(function() {
+  this.route('exchange', {
+    where: 'server',
+    action: function() {
+      console.log(this.request.body.make);
+      console.log(this.request.body.model);
+      this.response.writeHead(200, {'Content-Type': 'text/html'});
+      this.response.end('hello!\n');
+    }
+  });
+});
+
+Router.map(function() {
+  this.route('/', {
+  });
+});
