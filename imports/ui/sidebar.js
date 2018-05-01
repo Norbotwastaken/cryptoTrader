@@ -1,14 +1,12 @@
 import './sidebar.html';
 
 import { Balance } from '../api/balance.js';
+import { Session } from 'meteor/session';
 
 Template.sidebar.helpers({
 	balanceUSD() {
-		var bal = Balance.findOne(
-			{ 'balanceMatcher': Meteor.user().balanceMatcher },
-			{ 'balance': { USD: 1 }  }
-		);
-		if (bal) return Math.round( Number(bal.balance.USD) * 10 ) / 10;
+		var bal = Session.get('cryptoBalance');
+		return Math.round( Number(bal.data.usd) * 10 ) / 10;
 	},
 });
 

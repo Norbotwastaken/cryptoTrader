@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor';
 import { Template } from 'meteor/templating';
 import { ReactiveDict } from 'meteor/reactive-dict';
 import { CryptoConfig } from '../../cryptoConfig.js';
+import { Session } from 'meteor/session';
 
 import { Balance } from '../api/balance.js';
 
@@ -18,13 +19,10 @@ Template.overview.onCreated(function bodyOnCreated() {
 Template.overview.helpers({
 	cryptoTypes: CryptoConfig.currencies,
 	balanceCrypto(currency) {
-		var bal = Balance.findOne(
-			{ 'balanceMatcher': Meteor.user().balanceMatcher },
-			{ 'crypto': 1 }
-		);
-		if (!bal) return 0;
-		if (!bal.balance.crypto[currency]) return 0;
-		return Math.round( Number(bal.balance.crypto[currency]) * 10 ) / 10;
+		var bal = Session.get('cryptoBalance');
+		// console.log(bal);
+		// return bal.data[currency.toLowerCase()];
+		return Math.round( Number(bal.data[currency.toLowerCase()]) * 1000 ) / 1000;
 	},
 	exchangeTo() {
 		return Template.instance().state.get('exchangeToCurrency');
@@ -48,3 +46,25 @@ Template.overview.events({
 		event.target.reset();
 	}
 });
+
+Template.overview.onRendered(function bodyOnCreated() {
+	getBalance(function(bal) {
+		Session.set('cryptoBalance', bal);
+	});
+	Meteor.setInterval(function() {
+		getBalance(function(bal) {
+			Session.set('cryptoBalance', bal);
+		});
+	}, 10000)
+});
+
+function getBalance(callback) {
+	HTTP.call('GET',
+	'https://obudai-api.azurewebsites.net/api/account/', {
+		headers: { 'X-Access-Token': '033655EF-3DD4-4A6D-9023-08826545760F' }
+	}, (error, result) => {
+		if (!error) {
+			callback(result);
+		}
+	});
+}

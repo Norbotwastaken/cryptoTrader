@@ -6,38 +6,32 @@ import { CryptoConfig } from '../../cryptoConfig.js';
 export var Crypto = {
 	daily: function(currency, callback) {
 		var prices = [];
-		for (let i = 0; i < 24; i++) {
-			setTimeout(function() {
-				let now = new Date();
-				let theDay = new Date(now.setHours(now.getHours() - i));
-				let timestamp = Math.round( Number( theDay.getTime() / 1000));
-				getPastPrice(currency, timestamp, function(price) {
-					prices.unshift(price);
-					callback(prices);
-				});
-			}, 500 * i); // This API allows 15 calls/sec 
-		}
+		var times = [];
+		HTTP.call('GET',
+		'https://obudai-api.azurewebsites.net/api/exchange/' + currency, {
+			headers: { 'X-Access-Token': '033655EF-3DD4-4A6D-9023-08826545760F' }
+		}, (error, result) => {
+			if (!error) {
+				var keyNames = Object.keys(result.data.history);
+				var values = Object.values(result.data.history);
+				var delta = Math.floor( values.length / 12 );
+				for (i = 0; i < values.length; i += delta) {
+					prices.push(values[i]);
+					times.push(keyNames[i]);
+				}
+				callback(prices, times);
+			}
+		});
 	},
 	current: function(currency, callback) {
 		HTTP.call('GET',
-		'https://min-api.cryptocompare.com/data/price?fsym=' + currency + '&tsyms=USD', {
-			}, (error, result) => {
+		'https://obudai-api.azurewebsites.net/api/exchange/' + currency, {
+			headers: { 'X-Access-Token': '033655EF-3DD4-4A6D-9023-08826545760F' }
+		}, (error, result) => {
 			if (!error) {
-				callback(JSON.parse(result.content).USD);
+				callback(result.data.currentRate);
 			}
 		});
 	},
 	
-};
-
-var getPastPrice = function(currency, timestamp, callback) {
-	HTTP.call('GET',
-	'https://min-api.cryptocompare.com/data/dayAvg?fsym=' + currency + '&tsym=USD&avgType=MidHighLow&toTs=' + timestamp, {
-		}, (error, result) => {
-		if (!error) {
-			callback(Math.round( JSON.parse(result.content).USD * 100 ) / 100);
-		} else {
-			console.log(error);
-		}
-	});
 };

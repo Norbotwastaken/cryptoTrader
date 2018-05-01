@@ -23,14 +23,6 @@ var getChartColor = function() {
 }
 let chartDates = [];
 let chartColors = [];
-for (let i = 23; i >= 0; i--) {
-	var d = new Date();
-	d.setHours(d.getHours() - i);
-	var hours = d.getHours();
-	var minutes = "0" + d.getMinutes();
-	var formattedTime = hours + ':' + minutes.substr(-2);
-	chartDates.push(formattedTime);
-}
 for (let i = 0; i <= CryptoConfig.currencies.length; i++) {
 	chartColors.push(getChartColor());
 }
@@ -77,7 +69,7 @@ var refreshData = function() {
 		});
 	});
 	CryptoConfig.currencies.forEach(currency => {
-		Crypto.daily(currency.TLA, function(prices) {
+		Crypto.daily(currency.TLA, function(prices, times) {
 			CryptoCurrency.update(
 				{
 					name: currency.Displayname,
@@ -87,6 +79,10 @@ var refreshData = function() {
 					data: prices
 				}
 			);
+			// for	(i = 0; i < times.length; i++){
+			// 	times[i] = times[i].split(' ').join('\n').toLowerCase();
+			// }
+			chartDates = times;
 		});
 	});
 }

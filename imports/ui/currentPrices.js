@@ -24,7 +24,7 @@ Template.currentPrices.onRendered(function bodyOnCreated() {
 Template.currentPrices.helpers({
 	cryptoTypes: CryptoConfig.currencies,
 	currentValue(currency) {
-		return Session.get('current' + currency);
+		return Math.round( Number(Session.get('current' + currency)) * 100 ) / 100;
 	},
 	arrowType(currency) {
 		if (Number(Session.get('previous' + currency)) >  Number(Session.get('current' + currency))) return '-down red';
